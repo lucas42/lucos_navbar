@@ -1,0 +1,30 @@
+{
+  "name": "lucos_navbar",
+  "version": "1.0.0",
+  "description": "Web Component containing navigation bar for lucos apps",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example": "webpack -c example/webpack.config.js && open example/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucas42/lucos_navbar.git"
+  },
+  "keywords": [
+    "lucos",
+    "navigation"
+  ],
+  "author": "Luke Blaney",
+  "bugs": {
+    "url": "https://github.com/lucas42/lucos_navbar/issues"
+  },
+  "homepage": "https://github.com/lucas42/lucos_navbar#readme",
+  "dependencies": {
+    "lucos_time_component": "^1.0.0"
+  },
+  "devDependencies": {
+    "webpack-cli": "^4.9.2"
+  }
+}
