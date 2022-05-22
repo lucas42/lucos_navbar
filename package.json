@@ -1,6 +1,6 @@
 {
   "name": "lucos_navbar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Web Component containing navigation bar for lucos apps",
   "type": "module",
   "main": "index.js",

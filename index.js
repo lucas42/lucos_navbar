@@ -76,7 +76,6 @@ class Navbar extends HTMLElement {
 			text-align: center;
 			line-height: 30px;
 			font-weight: bold;
-			overflow: hidden;
 			height: 30px;
 			text-overflow: ellipsis;
 			white-space: nowrap;
