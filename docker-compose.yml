@@ -1,0 +1,5 @@
+version: '3'
+services:
+    navbar:
+      build: .
+      image: lucas42/lucos_navbar
