@@ -2,7 +2,7 @@ import 'lucos_time_component';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
-		return ['device','font'];
+		return ['device','font','text-colour','bg-colour'];
 	}
 	constructor() {
 		// Always call super first in constructor
@@ -45,13 +45,13 @@ class Navbar extends HTMLElement {
 		// Title-specific overrides
 		const titleStyle = document.createElement('style');
 
+		// Colour-specific overrides
+		const colourStyle = document.createElement('style');
+
 		mainStyle.textContent = `
 
 		:host {
 			z-index:1000;
-			color: white;
-			background-color: black;
-			background-image: -webkit-gradient(linear, 0 100%, 0 0, color-stop(0, transparent), color-stop(0.15, transparent), color-stop(0.9, rgba(255, 255, 255, 0.4)));
 			height: 100%;
 			position: absolute;
 			left: 0;
@@ -133,12 +133,29 @@ class Navbar extends HTMLElement {
 				`;
 			}
 		};
+
+		/**
+		 * Allow specific sites to use a custom colour for the navbar
+		 */
+		component.updateColour = () => {
+			const textColour = component.getAttribute("text-colour") || 'white';
+			const bgColour = component.getAttribute("bg-colour") || 'black';
+			colourStyle.textContent = `
+			:host {
+				color: ${textColour};
+				background-color: ${bgColour};
+				background-image: linear-gradient(rgba(255, 255, 255, 0.4) 10%, transparent 85%, transparent 100%)
+			}
+			`;
+		};
 		shadow.appendChild(mainStyle);
 		shadow.appendChild(deviceStyle);
 		shadow.appendChild(titleStyle);
+		shadow.appendChild(colourStyle);
 		addGlobalStyle();
 		component.updateDeviceStyle();
 		component.updateTitleFont();
+		component.updateColour();
 
 		shadow.appendChild(navbar);
 	}
@@ -150,6 +167,10 @@ class Navbar extends HTMLElement {
 				break;
 			case "font":
 				this.updateTitleFont();
+				break;
+			case "text-colour":
+			case "bg-colour":
+				this.updateColour();
 				break;
 		}
 	}
