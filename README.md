@@ -6,19 +6,13 @@ Web Component containing navigation bar for lucos apps
 * ES Modules
 * Web Components
 
-## Usage
-Include the following in your javascript:
-```
-import 'lucos_navbar';
-```
-
-Include the following at the top of the `<body>` tag in your html:
-```
-<lucos-navbar></lucos-navbar>
-```
-
-## Installation
+## Installation & Usage
 There's currently two ways to include lucos-navbar - as an npm package or a docker image.
+
+Regardless of installation method, also include the following element at the top of the `<body>` tag in your html:
+```
+<lucos-navbar>Title to appear in navbar</lucos-navbar>
+```
 
 ### NPM Package
 Run the following command:
@@ -27,6 +21,10 @@ Run the following command:
 	npm i lucos_navbar
 ```
 
+Then include the following in your javascript:
+```
+import 'lucos_navbar';
+```
 ### Docker Image
 Update the Dockerfile to include:
 
@@ -36,6 +34,11 @@ FROM lucas42/lucos_navbar:latest as navbar
 
 ## After `WORKDIR` has been set:
 COPY --from=navbar lucos_navbar.js .
+```
+
+Ensure the file is served by the webserver and then include the following at the end of the `<body>` tag in your html:
+```
+<script src="/lucos_navbar.js" type="text/javascript"></script>
 ```
 
 ## Manual Testing
