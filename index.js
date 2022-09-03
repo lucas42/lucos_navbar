@@ -91,6 +91,15 @@ class Navbar extends HTMLElement {
 			width: 100px;
 			flex-shrink: 9999;
 		}
+		a {
+			color: inherit;
+			text-decoration-line: none;
+			text-decoration-style: dashed;
+			text-decoration-thickness: 1px;
+		}
+		a:hover {
+			text-decoration-line: underline overline;
+		}
 
 		`;
 
