@@ -1,4 +1,4 @@
-import 'lucos_time_component';
+import initTimeComponent from 'lucos_time_component';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
@@ -205,4 +205,5 @@ function addGlobalStyle() {
 	globalStyleAdded = true;
 }
 
+initTimeComponent();
 customElements.define('lucos-navbar', Navbar);
