@@ -26,6 +26,6 @@
     "lucos_time_component": "^2.1.0"
   },
   "devDependencies": {
-    "webpack-cli": "^4.9.2"
+    "webpack-cli": "^5.1.4"
   }
 }
