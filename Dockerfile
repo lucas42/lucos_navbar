@@ -5,8 +5,7 @@ COPY package* ./
 
 RUN npm install
 
-COPY *.js ./
-
+COPY *js ./
 
 RUN npm run build
 
