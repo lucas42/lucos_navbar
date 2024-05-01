@@ -8,4 +8,12 @@ export default {
     path: new URL('.', import.meta.url).pathname,
   },
   mode: 'development',
+  module: {
+    rules: [
+      {
+       test: /\/assets\//,
+       type: 'asset/inline',
+      }
+    ],
+  }
 };

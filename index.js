@@ -1,4 +1,5 @@
 import initTimeComponent from 'lucos_time_component';
+import Logo from './assets/lucos-logo.png';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
@@ -14,7 +15,7 @@ class Navbar extends HTMLElement {
 		const navbar = document.createElement('div');
 		navbar.id="lucos_navbar";
 		const homeimg = document.createElement('img');
-		homeimg.src = 'https://l42.eu/logo.png';
+		homeimg.src = Logo;
 		homeimg.setAttribute("alt", "lucOS");
 		homeimg.id = 'lucos_navbar_logo';
 		const homeimglnk = document.createElement("a");
