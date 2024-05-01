@@ -2,3 +2,4 @@
 node_modules
 example/built.js
 .DS_Store
+lucos_navbar.js
