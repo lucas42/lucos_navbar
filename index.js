@@ -187,7 +187,7 @@ class Navbar extends HTMLElement {
 			if (!component.getAttribute("streaming") && !serviceWorkerWaiting) {
 				// If not showing an indicator, keep the width of the element as if one were there for consistency
 				statusIndicatorStyle.textContent = `
-				#lucos_navbar_statusIndicator {
+				#lucos_navbar_statusindicator {
 					display: block;
 					width: 30px;
 				}
@@ -201,7 +201,7 @@ class Navbar extends HTMLElement {
 			else if (component.getAttribute("streaming") === "stopped") iconColour = "red";
 			else iconColour = "white";
 			statusIndicatorStyle.textContent = `
-			#lucos_navbar_statusIndicator {
+			#lucos_navbar_statusindicator {
 				background-color: ${iconColour};
 				background-image: linear-gradient(rgba(255, 255, 255, 0.7) 15%, transparent 80%, transparent 85%, rgba(0, 0, 0, 0.2) 95%, transparent 100%);
 				border: inset 1px ${iconColour};
