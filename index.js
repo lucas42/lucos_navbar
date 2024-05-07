@@ -3,12 +3,13 @@ import Logo from './assets/lucos-logo.png';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
-		return ['device','font','text-colour','bg-colour','streaming'];
+		return ['device','font','text-colour','bg-colour','streaming','service-worker'];
 	}
 	constructor() {
 		// Always call super first in constructor
 		super();
 		const component = this;
+		const statusChannel = new BroadcastChannel("lucos_status");
 
 		const shadow = this.attachShadow({mode: 'closed'});
 	
@@ -36,6 +37,11 @@ class Navbar extends HTMLElement {
 
 		const statusIndicatorNode = document.createElement('span');
 		statusIndicatorNode.id='lucos_navbar_statusindicator';
+		statusIndicatorNode.addEventListener("click", function () {
+			if (component.getAttribute("service-worker") === "waiting") {
+				statusChannel.postMessage("service-worker-skip-waiting");
+			}
+		});
 		navbar.appendChild(statusIndicatorNode);
 		
 		// Swallow any clicks on the navbar to stop pages handling them
@@ -175,8 +181,10 @@ class Navbar extends HTMLElement {
 		 * Enable an indicator icon, which can change to show the current state of eg web socket connection
 		 */
 		component.updateStatusIndicator = () => {
+			const serviceWorkerWaiting = (component.getAttribute("service-worker") === "waiting");
 			let iconColour;
-			if (!component.getAttribute("streaming")) {
+			let cursor = "default";
+			if (!component.getAttribute("streaming") && !serviceWorkerWaiting) {
 				// If not showing an indicator, keep the width of the element as if one were there for consistency
 				statusIndicatorStyle.textContent = `
 				#lucos_navbar_statusIndicator {
@@ -186,7 +194,10 @@ class Navbar extends HTMLElement {
 				`;
 				return;
 			}
-			if (component.getAttribute("streaming") === "active") iconColour = "green";
+			if (serviceWorkerWaiting) {
+				iconColour = "blue";
+				cursor = "pointer";
+			} else if (component.getAttribute("streaming") === "active") iconColour = "green";
 			else if (component.getAttribute("streaming") === "stopped") iconColour = "red";
 			else iconColour = "white";
 			statusIndicatorStyle.textContent = `
@@ -198,6 +209,8 @@ class Navbar extends HTMLElement {
 				display: block;
 				padding: 11px;
 				margin: 3px;
+				cursor: ${cursor};
+				pointer-events: ${cursor == "pointer" ? "auto" : "none"};
 			}
 			`;
 		};
@@ -228,6 +241,7 @@ class Navbar extends HTMLElement {
 				this.updateColour();
 				break;
 			case "streaming":
+			case "service-worker":
 				this.updateStatusIndicator();
 				break;
 		}
