@@ -3,7 +3,7 @@ import Logo from './assets/lucos-logo.png';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
-		return ['device','font','text-colour','bg-colour'];
+		return ['device','font','text-colour','bg-colour','streaming'];
 	}
 	constructor() {
 		// Always call super first in constructor
@@ -33,6 +33,10 @@ class Navbar extends HTMLElement {
 		const spacerNode = document.createElement('span');
 		spacerNode.id='lucos_navbar_spacer';
 		navbar.appendChild(spacerNode);
+
+		const statusIndicatorNode = document.createElement('span');
+		statusIndicatorNode.id='lucos_navbar_statusindicator';
+		navbar.appendChild(statusIndicatorNode);
 		
 		// Swallow any clicks on the navbar to stop pages handling them
 		navbar.addEventListener("click", function _stopnavbarpropagation(event) { event.stopPropagation(); }, false);
@@ -48,6 +52,9 @@ class Navbar extends HTMLElement {
 
 		// Colour-specific overrides
 		const colourStyle = document.createElement('style');
+
+		// Status Indicator overrides
+		const statusIndicatorStyle = document.createElement('style');
 
 		mainStyle.textContent = `
 
@@ -88,8 +95,13 @@ class Navbar extends HTMLElement {
 			margin: 0 1em;
 			vertical-align: middle;
 		}
+
+		/**
+		 * Used so title is centred (100px logo width minus 30px status indicator width leaves 70px spacer)
+		 * Using a large flex shrink, so if there's not enough space, this is the first element to get squeezed
+		 */
 		#lucos_navbar_spacer {
-			width: 100px;
+			width: 70px;
 			flex-shrink: 9999;
 		}
 		a {
@@ -158,14 +170,47 @@ class Navbar extends HTMLElement {
 			}
 			`;
 		};
+
+		/**
+		 * Enable an indicator icon, which can change to show the current state of eg web socket connection
+		 */
+		component.updateStatusIndicator = () => {
+			let iconColour;
+			if (!component.getAttribute("streaming")) {
+				// If not showing an indicator, keep the width of the element as if one were there for consistency
+				statusIndicatorStyle.textContent = `
+				#lucos_navbar_statusIndicator {
+					display: block;
+					width: 30px;
+				}
+				`;
+				return;
+			}
+			if (component.getAttribute("streaming") === "active") iconColour = "green";
+			else if (component.getAttribute("streaming") === "stopped") iconColour = "red";
+			else iconColour = "white";
+			statusIndicatorStyle.textContent = `
+			#lucos_navbar_statusIndicator {
+				background-color: ${iconColour};
+				background-image: linear-gradient(rgba(255, 255, 255, 0.7) 15%, transparent 80%, transparent 85%, rgba(0, 0, 0, 0.2) 95%, transparent 100%);
+				border: inset 1px ${iconColour};
+				border-radius: 25px;
+				display: block;
+				padding: 11px;
+				margin: 3px;
+			}
+			`;
+		};
 		shadow.appendChild(mainStyle);
 		shadow.appendChild(deviceStyle);
 		shadow.appendChild(titleStyle);
 		shadow.appendChild(colourStyle);
+		shadow.appendChild(statusIndicatorStyle);
 		addGlobalStyle();
 		component.updateDeviceStyle();
 		component.updateTitleFont();
 		component.updateColour();
+		component.updateStatusIndicator();
 
 		shadow.appendChild(navbar);
 	}
@@ -181,6 +226,9 @@ class Navbar extends HTMLElement {
 			case "text-colour":
 			case "bg-colour":
 				this.updateColour();
+				break;
+			case "streaming":
+				this.updateStatusIndicator();
 				break;
 		}
 	}

@@ -5,6 +5,10 @@
 	<body>
 		<lucos-navbar>Hello World</lucos-navbar>
 		<h1>Main body goes here</h1>
+		<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'active');">Streaming Active</button>
+		<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'stopped')">Streaming Stopped</button>
+		<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('streaming')">Clear Streaming</button>
+		<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'aeoudoesuaheus')">Unknown value for streaming</button>
 		<script src="./built.js"></script>
 	</body>
 </html>
