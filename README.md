@@ -41,6 +41,16 @@ Ensure the file is served by the webserver and then include the following at the
 <script src="/lucos_navbar.js" type="text/javascript"></script>
 ```
 
+### Attributes to the navbar
+The navigation bar will function without any attributes.  The following attributes can be added as optional:
+
+* `device` (deprecated) - set to "cast-receiver" to tweak the style so it suits big screens with lower resolution
+* `font` set to a valid `font-family` CSS value to apply to the title.  If set, font size is automatically increased.
+* `text-colour` any valid CSS colour value for the text in the navbar.  Defaults to white.
+* `bg-colour` any valid CSS colour value for the background of the navbar.  Defaults to black.  A gradient is applied on top of the given colour.
+* `streaming` the status of any streaming connection with the server (eg web socket or long polling).  Recognised values are "active" or "stopped".  Sets a status indicator on the right on the navbar.
+* `service-worker` the status of any service worker serving the app.  Only recognised value is "waiting", which will set the status indicator and makes it clickable, which'll send a message "service-worker-skip-waiting" to the Broadcast Channel `lucos_status`.  This takes precedant over `streaming` attribute for setting status indicator.
+
 ## Manual Testing
 Run:
 ```

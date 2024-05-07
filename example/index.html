@@ -4,21 +4,54 @@
 	</head>
 	<body>
 		<lucos-navbar>Hello World</lucos-navbar>
-		<h1>Main body goes here</h1>
+		<h1>Test Controls</h1>
 		<div>
+			<h2>Device Attribute (deprecated)</h2>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('device', 'cast-receiver');">Set Device to "cast-receiver"</button>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('device')">Clear Device</button>
+		</div>
+		<div>
+			<h2>Font</h2>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('font', 'cursive');">Cursive Font</button>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('font')">Clear Font</button>
+		</div>
+		<div>
+			<h2>Text Colour</h2>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('text-colour', 'black');">Black Text</button>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('text-colour')">Clear Text Colour</button>
+		</div>
+		<div>
+			<h2>BG Colour</h2>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('bg-colour', 'red');">Red Background</button>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('bg-colour')">Clear Background Colour</button>
+		</div>
+		<div>
+			<h2>Streaming Attribute</h2>
 			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'active');">Streaming Active</button>
 			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'stopped')">Streaming Stopped</button>
-			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('streaming')">Clear Streaming</button>
 			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'aeoudoesuaheus')">Unknown value for streaming</button>
+			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('streaming')">Clear Streaming</button>
+		</div>
+		<div>
+			<h2>Service Worker Attribue</h2>
 			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('service-worker', 'active')">Service Worker Active</button>
 			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('service-worker', 'waiting')">Service Worker Waiting</button>
 			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('service-worker')">Clear Service Worker</button>
 		</div>
-		<div style="padding: 1em 0.5em; background: #eee; margin: 0.5em 0;">Status Channel Output: <input disabled="disabled" id="output" style="width:500px" /><button onclick="document.getElementById('output').value = null;">Clear</button></div>
+		<div style="padding: 1em 0.5em; background: #eee; margin: 0.5em 0;">
+			<h2>Outputs</h2>
+			<div>Attributes: <input disabled="disabled" id="attributes" style="width:1000px" /></div>
+			<div>Status Channel: <input disabled="disabled" id="status-channel" style="width:500px" /><button onclick="document.getElementById('status-channel').value = null;">Clear</button></div>
+		</div>
 		<script type="text/javascript">
 			const statusChannel = new BroadcastChannel("lucos_status");
 			statusChannel.addEventListener("message", function streamStatusMessage(event) {
-				document.getElementById('output').value = event.data;
+				document.getElementById('status-channel').value = event.data;
+			});
+			[...document.getElementsByTagName("button")].forEach(button => {
+				button.addEventListener("click", () => {
+					document.getElementById('attributes').value = [...document.getElementsByTagName('lucos-navbar')[0].attributes].map(attr => attr.name+'="'+attr.value+'"').join(" ");
+				});
 			});
 		</script>
 		<script src="./built.js"></script>
