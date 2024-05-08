@@ -184,6 +184,7 @@ class Navbar extends HTMLElement {
 			const serviceWorkerWaiting = (component.getAttribute("service-worker") === "waiting");
 			let iconColour;
 			let cursor = "default";
+			let title;
 			if (!component.getAttribute("streaming") && !serviceWorkerWaiting) {
 				// If not showing an indicator, keep the width of the element as if one were there for consistency
 				statusIndicatorStyle.textContent = `
@@ -192,14 +193,24 @@ class Navbar extends HTMLElement {
 					width: 30px;
 				}
 				`;
+				statusIndicatorNode.removeAttribute("title");
 				return;
 			}
 			if (serviceWorkerWaiting) {
 				iconColour = "blue";
 				cursor = "pointer";
-			} else if (component.getAttribute("streaming") === "active") iconColour = "green";
-			else if (component.getAttribute("streaming") === "stopped") iconColour = "red";
-			else iconColour = "white";
+				title = "New Version Available";
+			} else if (component.getAttribute("streaming") === "active") {
+				iconColour = "green";
+				title = "Connected";
+			} else if (component.getAttribute("streaming") === "stopped") {
+				iconColour = "red";
+				title = "Disconnected";
+			} else {
+				iconColour = "white";
+				title = "Unknown Status: "+component.getAttribute("streaming");
+			}
+			statusIndicatorNode.setAttribute("title", title);
 			statusIndicatorStyle.textContent = `
 			#lucos_navbar_statusindicator {
 				background-color: ${iconColour};
@@ -210,7 +221,6 @@ class Navbar extends HTMLElement {
 				padding: 11px;
 				margin: 3px;
 				cursor: ${cursor};
-				pointer-events: ${cursor == "pointer" ? "auto" : "none"};
 			}
 			`;
 		};
