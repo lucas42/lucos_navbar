@@ -39,6 +39,7 @@ class Navbar extends HTMLElement {
 		statusIndicatorNode.id='lucos_navbar_statusindicator';
 		statusIndicatorNode.addEventListener("click", function () {
 			if (component.getAttribute("service-worker") === "waiting") {
+				statusIndicatorNode.classList.add("refreshing");
 				statusChannel.postMessage("service-worker-skip-waiting");
 			}
 		});
@@ -120,6 +121,22 @@ class Navbar extends HTMLElement {
 			text-decoration-line: underline overline;
 		}
 
+		#lucos_navbar_statusindicator {
+			display: block;
+			padding: 11px;
+			margin: 3px;
+			border: inset 1px transparent;
+			border-radius: 25px;
+		}
+
+		#lucos_navbar_statusindicator.refreshing  {
+			animation: spin 1.25s linear infinite running;
+		}
+
+		@keyframes spin {
+			from { transform:rotate(0deg); }
+			to { transform:rotate(360deg); }
+		}
 		`;
 
 
@@ -185,14 +202,14 @@ class Navbar extends HTMLElement {
 			let iconColour;
 			let cursor = "default";
 			let title;
+
+			// If the service worker is no longer in waiting mode, remove the refreshing class
+			// This is rarely the case, as most apps do a full refresh of the page after SW waiting has been skipped
+			if (!serviceWorkerWaiting) {
+				statusIndicatorNode.classList.remove("refreshing");
+			}
 			if (!component.getAttribute("streaming") && !serviceWorkerWaiting) {
-				// If not showing an indicator, keep the width of the element as if one were there for consistency
-				statusIndicatorStyle.textContent = `
-				#lucos_navbar_statusindicator {
-					display: block;
-					width: 30px;
-				}
-				`;
+				statusIndicatorStyle.textContent = '';
 				statusIndicatorNode.removeAttribute("title");
 				return;
 			}
@@ -215,11 +232,7 @@ class Navbar extends HTMLElement {
 			#lucos_navbar_statusindicator {
 				background-color: ${iconColour};
 				background-image: linear-gradient(rgba(255, 255, 255, 0.7) 15%, transparent 80%, transparent 85%, rgba(0, 0, 0, 0.2) 95%, transparent 100%);
-				border: inset 1px ${iconColour};
-				border-radius: 25px;
-				display: block;
-				padding: 11px;
-				margin: 3px;
+				border-color: ${iconColour};
 				cursor: ${cursor};
 			}
 			`;
