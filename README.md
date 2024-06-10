@@ -62,10 +62,12 @@ This uses webpack to build the javascript and then opens a html page which inclu
 Not yet available
 
 ## Publish to npm
-Make sure to bump the version number in package.json.
+Automatically publishes on the `main` branch when pushed to github.
 
-Then run `npm publish` (assuming you're already logged in)
+Make sure to bump the version number in package.json. (Can use `npm version ${version_number}`).
+
 
 ## Publish to dockerhub
-Happens automatically in circle when pushed to github.
+Automatically publishes on the `main` branch when pushed to github.
+
 Creates a docker image containing a single file called `lucos_navbar.js` which can be included in other projects which don't use npm
