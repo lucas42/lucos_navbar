@@ -3,7 +3,7 @@ import Logo from './assets/lucos-logo.png';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
-		return ['device','font','text-colour','bg-colour','streaming','service-worker'];
+		return ['font','text-colour','bg-colour','streaming','service-worker'];
 	}
 	constructor() {
 		// Always call super first in constructor
@@ -50,9 +50,6 @@ class Navbar extends HTMLElement {
 
 		// Primary stylesheet for the navbar
 		const mainStyle = document.createElement('style');
-
-		// Device-specific overrides
-		const deviceStyle = document.createElement('style');
 
 		// Title-specific overrides
 		const titleStyle = document.createElement('style');
@@ -139,30 +136,6 @@ class Navbar extends HTMLElement {
 		}
 		`;
 
-
-		/**
-		 * Some devices are tricksy (eg chromecasts), so need additional styling
-		 */
-		component.updateDeviceStyle = () => {
-			switch(component.getAttribute("device")) {
-				case "cast-receiver":
-
-					deviceStyle.textContent = `
-					#lucos_navbar {
-						font-size: 4vh;
-					}
-					#lucos_navbar_logo {
-						height: 5vh;
-					}
-					`;
-					component.style.padding = "3vh";
-					break;
-				default:
-					deviceStyle.textContent = '';
-					component.style.padding = '';
-			}
-		};
-
 		/**
 		 * Allow specific sites to use a custom font for the title
 		 */
@@ -238,12 +211,10 @@ class Navbar extends HTMLElement {
 			`;
 		};
 		shadow.appendChild(mainStyle);
-		shadow.appendChild(deviceStyle);
 		shadow.appendChild(titleStyle);
 		shadow.appendChild(colourStyle);
 		shadow.appendChild(statusIndicatorStyle);
 		addGlobalStyle();
-		component.updateDeviceStyle();
 		component.updateTitleFont();
 		component.updateColour();
 		component.updateStatusIndicator();
@@ -253,9 +224,6 @@ class Navbar extends HTMLElement {
 
 	attributeChangedCallback(name, oldValue, newValue) {
 		switch (name) {
-			case "device":
-				this.updateDeviceStyle();
-				break;
 			case "font":
 				this.updateTitleFont();
 				break;
@@ -277,7 +245,6 @@ function addGlobalStyle() {
 	//Only ever load global style once
 	if (globalStyleAdded) return;
 
-	// Device-specific overrides
 	const globalStyle = document.createElement('style');
 
 	globalStyle.textContent = `
