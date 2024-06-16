@@ -21,17 +21,15 @@
 			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('bg-colour')">Clear Background Colour</button>
 		</div>
 		<div>
-			<h2>Streaming Attribute</h2>
-			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'active');">Streaming Active</button>
-			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'stopped')">Streaming Stopped</button>
-			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('streaming', 'aeoudoesuaheus')">Unknown value for streaming</button>
-			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('streaming')">Clear Streaming</button>
+			<h2>Streaming Broadcast Message</h2>
+			<button onclick="statusChannel.postMessage('streaming-opened');">Streaming Opened</button>
+			<button onclick="statusChannel.postMessage('streaming-closed');">Streaming Closed</button>
+			<button onclick="statusChannel.postMessage('streaming-aeoudoesuaheus');">Unknown value for streaming</button>
 		</div>
 		<div>
-			<h2>Service Worker Attribue</h2>
-			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('service-worker', 'active')">Service Worker Active</button>
-			<button onclick="document.getElementsByTagName('lucos-navbar')[0].setAttribute('service-worker', 'waiting')">Service Worker Waiting</button>
-			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('service-worker')">Clear Service Worker</button>
+			<h2>Service Worker Broadcast Message</h2>
+			<button onclick="statusChannel.postMessage('service-worker-active');">Service Worker Active</button>
+			<button onclick="statusChannel.postMessage('service-worker-waiting');">Service Worker Waiting</button>
 		</div>
 		<div style="padding: 1em 0.5em; background: #eee; margin: 0.5em 0;">
 			<h2>Outputs</h2>

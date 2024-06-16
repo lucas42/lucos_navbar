@@ -47,8 +47,18 @@ The navigation bar will function without any attributes.  The following attribut
 * `font` set to a valid `font-family` CSS value to apply to the title.  If set, font size is automatically increased.
 * `text-colour` any valid CSS colour value for the text in the navbar.  Defaults to white.
 * `bg-colour` any valid CSS colour value for the background of the navbar.  Defaults to black.  A gradient is applied on top of the given colour.
-* `streaming` the status of any streaming connection with the server (eg web socket or long polling).  Recognised values are "active" or "stopped".  Sets a status indicator on the right on the navbar.
-* `service-worker` the status of any service worker serving the app.  Only recognised value is "waiting", which will set the status indicator and makes it clickable, which'll send a message "service-worker-skip-waiting" to the Broadcast Channel `lucos_status`.  This takes precedant over `streaming` attribute for setting status indicator.
+
+### Broadcast Channel Events
+The status indicator interacts via a Broadcast Channel called `lucos_status`.
+
+It listens to the following events:
+* `streaming-opened` Indicates a streaming connection with the server (eg web socket or long polling) has started.  Status indicator turns green.
+* `streaming-closed` Indicates a streaming connection with the server (eg web socket or long polling) has finished.  Status indicator turns red.
+* `service-worker-waiting` Indicates a new service worker is available for use.  Status indicator turns blue.  This takes precedant over `streaming-*` events.
+* `service-worker-active` Indicates a service worker has become active.  Removes the behaviours set by `service-worker-waiting`, including any animations on the status indicator.
+
+It fires the following event:
+* `service-worker-skip-waiting` Fired when the status indicator is in the `service-worker-waiting` state and recieves a click event.  The status indicator also begins to spin when this is fired.  This indicates to the new service worker that it should skip waiting and become the active one.
 
 ## Manual Testing
 Run:

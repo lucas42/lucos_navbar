@@ -1,16 +1,15 @@
 import initTimeComponent from 'lucos_time_component';
 import Logo from './assets/lucos-logo.png';
+import './status-indicator.js';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
-		return ['font','text-colour','bg-colour','streaming','service-worker'];
+		return ['font','text-colour','bg-colour'];
 	}
 	constructor() {
 		// Always call super first in constructor
 		super();
 		const component = this;
-		const statusChannel = new BroadcastChannel("lucos_status");
-
 		const shadow = this.attachShadow({mode: 'closed'});
 	
 		const navbar = document.createElement('div');
@@ -35,30 +34,14 @@ class Navbar extends HTMLElement {
 		spacerNode.id='lucos_navbar_spacer';
 		navbar.appendChild(spacerNode);
 
-		const statusIndicatorNode = document.createElement('span');
-		statusIndicatorNode.id='lucos_navbar_statusindicator';
-		statusIndicatorNode.addEventListener("click", function () {
-			if (component.getAttribute("service-worker") === "waiting") {
-				statusIndicatorNode.classList.add("refreshing");
-				statusChannel.postMessage("service-worker-skip-waiting");
-			}
-		});
-		navbar.appendChild(statusIndicatorNode);
+		navbar.appendChild(document.createElement('lucos-status-indicator'));
 		
 		// Swallow any clicks on the navbar to stop pages handling them
 		navbar.addEventListener("click", function _stopnavbarpropagation(event) { event.stopPropagation(); }, false);
 
-		// Primary stylesheet for the navbar
-		const mainStyle = document.createElement('style');
-
-		// Title-specific overrides
-		const titleStyle = document.createElement('style');
-
-		// Colour-specific overrides
-		const colourStyle = document.createElement('style');
-
-		// Status Indicator overrides
-		const statusIndicatorStyle = document.createElement('style');
+		const mainStyle = document.createElement('style');   // Primary stylesheet for the navbar
+		const titleStyle = document.createElement('style');  // Title-specific overrides
+		const colourStyle = document.createElement('style'); // Colour-specific overrides
 
 		mainStyle.textContent = `
 
@@ -117,23 +100,6 @@ class Navbar extends HTMLElement {
 		a:hover {
 			text-decoration-line: underline overline;
 		}
-
-		#lucos_navbar_statusindicator {
-			display: block;
-			padding: 11px;
-			margin: 3px;
-			border: inset 1px transparent;
-			border-radius: 25px;
-		}
-
-		#lucos_navbar_statusindicator.refreshing  {
-			animation: spin 1.25s linear infinite running;
-		}
-
-		@keyframes spin {
-			from { transform:rotate(0deg); }
-			to { transform:rotate(360deg); }
-		}
 		`;
 
 		/**
@@ -167,57 +133,12 @@ class Navbar extends HTMLElement {
 			`;
 		};
 
-		/**
-		 * Enable an indicator icon, which can change to show the current state of eg web socket connection
-		 */
-		component.updateStatusIndicator = () => {
-			const serviceWorkerWaiting = (component.getAttribute("service-worker") === "waiting");
-			let iconColour;
-			let cursor = "default";
-			let title;
-
-			// If the service worker is no longer in waiting mode, remove the refreshing class
-			// This is rarely the case, as most apps do a full refresh of the page after SW waiting has been skipped
-			if (!serviceWorkerWaiting) {
-				statusIndicatorNode.classList.remove("refreshing");
-			}
-			if (!component.getAttribute("streaming") && !serviceWorkerWaiting) {
-				statusIndicatorStyle.textContent = '';
-				statusIndicatorNode.removeAttribute("title");
-				return;
-			}
-			if (serviceWorkerWaiting) {
-				iconColour = "blue";
-				cursor = "pointer";
-				title = "New Version Available";
-			} else if (component.getAttribute("streaming") === "active") {
-				iconColour = "green";
-				title = "Connected";
-			} else if (component.getAttribute("streaming") === "stopped") {
-				iconColour = "red";
-				title = "Disconnected";
-			} else {
-				iconColour = "white";
-				title = "Unknown Status: "+component.getAttribute("streaming");
-			}
-			statusIndicatorNode.setAttribute("title", title);
-			statusIndicatorStyle.textContent = `
-			#lucos_navbar_statusindicator {
-				background-color: ${iconColour};
-				background-image: linear-gradient(rgba(255, 255, 255, 0.7) 15%, transparent 80%, transparent 85%, rgba(0, 0, 0, 0.2) 95%, transparent 100%);
-				border-color: ${iconColour};
-				cursor: ${cursor};
-			}
-			`;
-		};
 		shadow.appendChild(mainStyle);
 		shadow.appendChild(titleStyle);
 		shadow.appendChild(colourStyle);
-		shadow.appendChild(statusIndicatorStyle);
 		addGlobalStyle();
 		component.updateTitleFont();
 		component.updateColour();
-		component.updateStatusIndicator();
 
 		shadow.appendChild(navbar);
 	}
@@ -231,29 +152,22 @@ class Navbar extends HTMLElement {
 			case "bg-colour":
 				this.updateColour();
 				break;
-			case "streaming":
-			case "service-worker":
-				this.updateStatusIndicator();
-				break;
 		}
 	}
 }
 
 let globalStyleAdded = false;
 function addGlobalStyle() {
-
-	//Only ever load global style once
+	// Only load global style once
 	if (globalStyleAdded) return;
-
 	const globalStyle = document.createElement('style');
-
 	globalStyle.textContent = `
 		body {
 			padding-top: 30px;
 		}
 	`;
 
-	// Prepend the global style, so individual pages can easily override (eg to set their own background-color)
+	// Prepend the global style, so individual pages can easily override
 	document.head.prepend(globalStyle);
 	globalStyleAdded = true;
 }
