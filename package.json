@@ -1,6 +1,6 @@
 {
   "name": "lucos_navbar",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Web Component containing navigation bar for lucos apps",
   "type": "module",
   "files": [
@@ -30,6 +30,6 @@
     "lucos_time_component": "^2.1.2"
   },
   "devDependencies": {
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^6.0.0"
   }
 }
