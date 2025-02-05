@@ -12,6 +12,5 @@ workflows:
                 - main
       - lucos/component-publish:
           filters:
-            branches:
-              only:
-                - main
+            tags:
+              only: /^v.*/
