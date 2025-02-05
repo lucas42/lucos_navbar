@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/lucas42/lucos_navbar#readme",
   "dependencies": {
-    "lucos_time_component": "^2.1.5"
+    "lucos_time_component": "^2.1.4"
   },
   "devDependencies": {
     "webpack-cli": "^6.0.0"
