@@ -1,0 +1,17 @@
+name: Increment Version
+on:
+  pull_request:
+    types:
+      - closed
+permissions:
+  contents: write
+jobs:
+  increment-version:
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Increment Version
+        run: npm version patch
+      - name: Commit
+        run: git push
