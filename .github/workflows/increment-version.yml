@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Setup Git
+        run: |
+          git config --global user.name 'Auto Increment'
+          git config --global user.email 'lucas42@users.noreply.github.com'
       - name: Increment Version
         run: npm version patch
       - name: Commit
