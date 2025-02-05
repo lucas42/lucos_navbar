@@ -7,9 +7,10 @@ workflows:
     jobs:
       - lucos/build-amd64:
           filters:
+            tags:
+              only: /^v.*/
             branches:
-              only:
-                - main
+              ignore: /.*/
       - lucos/component-publish:
           filters:
             tags:
