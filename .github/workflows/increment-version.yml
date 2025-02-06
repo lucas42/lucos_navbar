@@ -18,4 +18,4 @@ jobs:
       - name: Increment Version
         run: npm version patch
       - name: Commit
-        run: git push
+        run: git push --follow-tags
