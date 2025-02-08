@@ -1,15 +1,14 @@
 name: Increment Version
-on:
-  pull_request:
-    types:
-      - closed
+on: workflow_dispatch
 permissions:
   contents: write
 jobs:
   increment-version:
-    if: github.event.pull_request.merged
+#    if: github.event.pull_request.merged
     runs-on: ubuntu-latest
     steps:
+      - name: Output Inputs
+        run: echo "${{ toJSON(github.event.inputs) }}"
       - uses: actions/checkout@v3
       - name: Setup Git
         run: |
@@ -17,5 +16,5 @@ jobs:
           git config --global user.email 'lucas42@users.noreply.github.com'
       - name: Increment Version
         run: npm version patch
-      - name: Commit
-        run: git push --follow-tags
+#      - name: Commit
+#        run: git push --follow-tags
