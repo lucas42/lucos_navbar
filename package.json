@@ -1,6 +1,6 @@
 {
   "name": "lucos_navbar",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Web Component containing navigation bar for lucos apps",
   "type": "module",
   "files": [
