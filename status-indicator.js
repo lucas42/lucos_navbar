@@ -58,7 +58,7 @@ class StatusIndicator extends HTMLElement {
 				iconColour = "red";
 				title = "Disconnected";
 			} else {
-				iconColour = "white";
+				iconColour = "darkgrey";
 				title = "Unknown Status: "+component.getAttribute("streaming");
 			}
 			component.setAttribute("title", title);
