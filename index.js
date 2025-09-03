@@ -22,17 +22,17 @@ class Navbar extends HTMLElement {
 		homeimglnk.setAttribute("href", "https://l42.eu/");
 		homeimglnk.appendChild(homeimg);
 		navbar.appendChild(homeimglnk);
+
+		const spacerNode = document.createElement('span');
+		spacerNode.id='lucos_navbar_spacer';
+		navbar.appendChild(spacerNode);
 		
 		const titleNode = document.createElement('span');
 		while (this.firstChild) titleNode.appendChild(this.firstChild);
 		titleNode.id='lucos_navbar_title';
 		navbar.appendChild(titleNode);
 		
-		titleNode.appendChild(document.createElement('lucos-time'));
-
-		const spacerNode = document.createElement('span');
-		spacerNode.id='lucos_navbar_spacer';
-		navbar.appendChild(spacerNode);
+		navbar.appendChild(document.createElement('lucos-time'));
 
 		navbar.appendChild(document.createElement('lucos-status-indicator'));
 		
@@ -59,6 +59,7 @@ class Navbar extends HTMLElement {
 			font-family: Georgia, serif;
 			height: 100%;
 			display: flex;
+			overflow: hidden;
 		}
 		#lucos_navbar_logo {
 			height: 25px;
@@ -75,20 +76,23 @@ class Navbar extends HTMLElement {
 			text-overflow: ellipsis;
 			white-space: nowrap;
 			flex-grow: 1;
+			min-width: 0;
+			overflow: hidden;
 		}
 		lucos-time {
-			font-size: 18px;
 			font-family: "Courier New", Courier, monospace;
-			margin: 0 1em;
-			vertical-align: middle;
+			margin: auto 10px;
+			font-weight: bold;
+			width: 90px;
+			text-align: center;
 		}
 
 		/**
-		 * Used so title is centred (100px logo width minus 30px status indicator width leaves 70px spacer)
+		 * Used so title is centred (100px logo width on left. 110px time + 30px status indicator width on right.  Needs 40px spacer)
 		 * Using a large flex shrink, so if there's not enough space, this is the first element to get squeezed
 		 */
 		#lucos_navbar_spacer {
-			width: 70px;
+			width: 40px;
 			flex-shrink: 9999;
 		}
 		a {

@@ -21,6 +21,12 @@
 			<button onclick="document.getElementsByTagName('lucos-navbar')[0].removeAttribute('bg-colour')">Clear Background Colour</button>
 		</div>
 		<div>
+			<h2>Text Length</h2>
+			<button onclick="const template = document.createElement('template'); template.innerHTML='<lucos-navbar>Hello World</lucos-navbar>'; document.getElementsByTagName('lucos-navbar')[0].replaceWith(template.content.firstElementChild);">Short Text</button>
+			<button onclick="const template = document.createElement('template'); template.innerHTML='<lucos-navbar>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut ullamcorper est justo, sit amet tristique ligula varius vitae. Fusce eu nunc id turpis venenatis tincidunt id in elit. Suspendisse nec velit mattis ex pulvinar eleifend. Vivamus posuere et nunc quis eleifend. Nunc mattis elit at nulla egestas, vel molestie lectus aliquet. Ut id porta tortor, eget elementum nisl. Vestibulum semper dolor vitae suscipit varius. Morbi vitae dapibus enim. Sed interdum augue vitae aliquet interdum. Nam vitae risus ac mi ullamcorper malesuada vitae in sapien. Maecenas sit amet maximus mi. Etiam molestie pulvinar sapien vitae mattis. Aenean accumsan egestas fringilla.</lucos-navbar>'; document.getElementsByTagName('lucos-navbar')[0].replaceWith(template.content.firstElementChild);">Longer Text</button>
+			<br /><em>(Replaces whole element, so other attributes get reset)</em>
+		</div>
+		<div>
 			<h2>Streaming Broadcast Message</h2>
 			<button onclick="statusChannel.postMessage('streaming-opened');">Streaming Opened</button>
 			<button onclick="statusChannel.postMessage('streaming-closed');">Streaming Closed</button>
@@ -33,8 +39,8 @@
 		</div>
 		<div style="padding: 1em 0.5em; background: #eee; margin: 0.5em 0;">
 			<h2>Outputs</h2>
-			<div>Attributes: <input disabled="disabled" id="attributes" style="width:1000px" /></div>
-			<div>Status Channel: <input disabled="disabled" id="status-channel" style="width:500px" /><button onclick="document.getElementById('status-channel').value = null;">Clear</button></div>
+			<div>Attributes: <input disabled="disabled" id="attributes" style="width:1000px; max-width: 90%;" /></div>
+			<div>Status Channel: <input disabled="disabled" id="status-channel" style="width:500px; max-width: 90%;" /><button onclick="document.getElementById('status-channel').value = null;">Clear</button></div>
 		</div>
 		<script type="text/javascript">
 			const statusChannel = new BroadcastChannel("lucos_status");
