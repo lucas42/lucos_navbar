@@ -11,7 +11,7 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - lucos/component-publish:
+      - lucos/component-npm-publish:
           filters:
             tags:
               only: /^v.*/
