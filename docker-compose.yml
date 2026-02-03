@@ -1,4 +1,4 @@
 services:
     navbar:
       build: .
-      image: lucas42/lucos_navbar
+      image: lucas42/lucos_navbar:${VERSION:-latest}
