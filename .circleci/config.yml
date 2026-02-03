@@ -1,19 +1,9 @@
 version: 2.1
 orbs:
   lucos: lucos/deploy@0
+
 workflows:
   version: 2
-  build-deploy:
+  release:
     jobs:
-      - lucos/build-amd64:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - lucos/component-npm-publish:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+      - lucos/release-npm-and-docker
