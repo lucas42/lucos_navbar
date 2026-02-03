@@ -30,7 +30,7 @@ Update the Dockerfile to include:
 
 ```
 ## Near top of file:
-FROM lucas42/lucos_navbar:latest as navbar
+FROM lucas42/lucos_navbar:<<version_number>> as navbar
 
 ## After `WORKDIR` has been set:
 COPY --from=navbar lucos_navbar.js .
@@ -72,8 +72,6 @@ Not yet available
 
 ## Publish to npm
 Automatically publishes on the `main` branch when pushed to github.
-
-Make sure to bump the version number in package.json. (Can use `npm version ${version_number}`).
 
 
 ## Publish to dockerhub
