@@ -31,5 +31,8 @@
   },
   "devDependencies": {
     "webpack-cli": "^6.0.0"
+  },
+  "overrides": {
+    "serialize-javascript": ">=7.0.3"
   }
 }
