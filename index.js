@@ -4,7 +4,7 @@ import './status-indicator.js';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
-		return ['font','text-colour','bg-colour'];
+		return ['font','title-padding','text-colour','bg-colour'];
 	}
 	constructor() {
 		// Always call super first in constructor
@@ -107,19 +107,23 @@ class Navbar extends HTMLElement {
 		`;
 
 		/**
-		 * Allow specific sites to use a custom font for the title
+		 * Allow specific sites to use a custom font and/or padding for the title
 		 */
-		component.updateTitleFont = () => {
-			if(!component.getAttribute("font")) {
+		component.updateTitleStyle = () => {
+			if(!component.getAttribute("font") && !component.getAttribute("title-padding")) {
 				titleStyle.textContent = '';
-			} else {
-				titleStyle.textContent = `
-				#lucos_navbar_title {
-					font-size: 40px;
-					font-family: ${component.getAttribute("font")};
-				}
-				`;
+				return;
 			}
+			let newStyle = "#lucos_navbar_title {\n";
+			if (component.getAttribute("font")) {
+				newStyle += "\tfont-size: 40px;\n";
+				newStyle += `\tfont-family: ${component.getAttribute("font")};\n`;
+			}
+			if (component.getAttribute("title-padding")) {
+				newStyle += `\tpadding: ${component.getAttribute("title-padding")};\n`;
+			}
+			newStyle += "}\n";
+			titleStyle.textContent = newStyle;
 		};
 
 		/**
@@ -141,7 +145,7 @@ class Navbar extends HTMLElement {
 		shadow.appendChild(titleStyle);
 		shadow.appendChild(colourStyle);
 		addGlobalStyle();
-		component.updateTitleFont();
+		component.updateTitleStyle();
 		component.updateColour();
 
 		shadow.appendChild(navbar);
@@ -150,7 +154,8 @@ class Navbar extends HTMLElement {
 	attributeChangedCallback(name, oldValue, newValue) {
 		switch (name) {
 			case "font":
-				this.updateTitleFont();
+			case "title-padding":
+				this.updateTitleStyle();
 				break;
 			case "text-colour":
 			case "bg-colour":

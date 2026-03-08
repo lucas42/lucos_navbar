@@ -45,6 +45,7 @@ Ensure the file is served by the webserver and then include the following at the
 The navigation bar will function without any attributes.  The following attributes can be added as optional:
 
 * `font` set to a valid `font-family` CSS value to apply to the title.  If set, font size is automatically increased.
+* `title-padding` set to a valid `padding` CSS value to apply to the title.  Useful in combination with custom fonts which mightn't line up as expected.
 * `text-colour` any valid CSS colour value for the text in the navbar.  Defaults to white.
 * `bg-colour` any valid CSS colour value for the background of the navbar.  Defaults to black.  A gradient is applied on top of the given colour.
 
