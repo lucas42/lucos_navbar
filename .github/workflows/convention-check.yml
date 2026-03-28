@@ -1,0 +1,14 @@
+name: Convention check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  convention-check:
+    uses: lucas42/.github/.github/workflows/convention-check.yml@15f424984cb28e376b4cc4d7089247f6ccf20c94
+    secrets:
+      KEY_LUCOS_REPOS: ${{ secrets.KEY_LUCOS_REPOS }}
