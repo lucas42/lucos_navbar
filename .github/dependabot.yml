@@ -7,6 +7,14 @@ updates:
       time: '06:00'
     allow:
       - dependency-type: all
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+      major:
+        update-types:
+          - major
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -14,9 +22,25 @@ updates:
       time: '06:00'
     allow:
       - dependency-type: all
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+      major:
+        update-types:
+          - major
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     allow:
       - dependency-type: all
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+      major:
+        update-types:
+          - major
