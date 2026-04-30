@@ -27,7 +27,7 @@ class Navbar extends HTMLElement {
 		spacerNode.id='lucos_navbar_spacer';
 		navbar.appendChild(spacerNode);
 		
-		const titleNode = document.createElement('span');
+		const titleNode = document.createElement('h1');
 		while (this.firstChild) titleNode.appendChild(this.firstChild);
 		titleNode.id='lucos_navbar_title';
 		navbar.appendChild(titleNode);
@@ -78,6 +78,10 @@ class Navbar extends HTMLElement {
 			flex-grow: 1;
 			min-width: 0;
 			overflow: hidden;
+			/* Reset default h1 browser styles so the navbar layout is unaffected */
+			font-size: inherit;
+			margin: 0;
+			padding: 0;
 		}
 		lucos-time {
 			font-family: "Courier New", Courier, monospace;
