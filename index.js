@@ -39,11 +39,11 @@ class Navbar extends HTMLElement {
 		// Swallow any clicks on the navbar to stop pages handling them
 		navbar.addEventListener("click", function _stopnavbarpropagation(event) { event.stopPropagation(); }, false);
 
-		const mainStyle = document.createElement('style');   // Primary stylesheet for the navbar
-		const titleStyle = document.createElement('style');  // Title-specific overrides
-		const colourStyle = document.createElement('style'); // Colour-specific overrides
+		const mainSheet = new CSSStyleSheet();   // Primary stylesheet for the navbar
+		const titleSheet = new CSSStyleSheet();  // Title-specific overrides
+		const colourSheet = new CSSStyleSheet(); // Colour-specific overrides
 
-		mainStyle.textContent = `
+		mainSheet.replaceSync(`
 
 		:host {
 			z-index:1000;
@@ -108,14 +108,14 @@ class Navbar extends HTMLElement {
 		a:hover {
 			text-decoration-line: underline overline;
 		}
-		`;
+		`);
 
 		/**
 		 * Allow specific sites to use a custom font and/or padding for the title
 		 */
 		component.updateTitleStyle = () => {
 			if(!component.getAttribute("font") && !component.getAttribute("title-padding")) {
-				titleStyle.textContent = '';
+				titleSheet.replaceSync('');
 				return;
 			}
 			let newStyle = "#lucos_navbar_title {\n";
@@ -127,7 +127,7 @@ class Navbar extends HTMLElement {
 				newStyle += `\tpadding: ${component.getAttribute("title-padding")};\n`;
 			}
 			newStyle += "}\n";
-			titleStyle.textContent = newStyle;
+			titleSheet.replaceSync(newStyle);
 		};
 
 		/**
@@ -136,18 +136,16 @@ class Navbar extends HTMLElement {
 		component.updateColour = () => {
 			const textColour = component.getAttribute("text-colour") || 'white';
 			const bgColour = component.getAttribute("bg-colour") || 'black';
-			colourStyle.textContent = `
+			colourSheet.replaceSync(`
 			:host {
 				color: ${textColour};
 				background-color: ${bgColour};
 				background-image: linear-gradient(rgba(255, 255, 255, 0.4) 10%, transparent 85%, transparent 100%)
 			}
-			`;
+			`);
 		};
 
-		shadow.appendChild(mainStyle);
-		shadow.appendChild(titleStyle);
-		shadow.appendChild(colourStyle);
+		shadow.adoptedStyleSheets = [mainSheet, titleSheet, colourSheet];
 		addGlobalStyle();
 		component.updateTitleStyle();
 		component.updateColour();
@@ -173,15 +171,12 @@ let globalStyleAdded = false;
 function addGlobalStyle() {
 	// Only load global style once
 	if (globalStyleAdded) return;
-	const globalStyle = document.createElement('style');
-	globalStyle.textContent = `
-		body {
-			padding-top: 30px;
-		}
-	`;
+	const globalSheet = new CSSStyleSheet();
+	globalSheet.replaceSync('body { padding-top: 30px; }');
 
-	// Prepend the global style, so individual pages can easily override
-	document.head.prepend(globalStyle);
+	// adoptedStyleSheets are processed before <style> elements, so individual
+	// pages can still override this with their own stylesheets.
+	document.adoptedStyleSheets = [...document.adoptedStyleSheets, globalSheet];
 	globalStyleAdded = true;
 }
 

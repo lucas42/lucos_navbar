@@ -5,11 +5,11 @@ class StatusIndicator extends HTMLElement {
 		const component = this;
 		const shadow = this.attachShadow({mode: 'closed'});
 
-		const staticStyle = document.createElement('style');    // Size & postion attributes present all the time, to avoid things moving around when the status changes
-		const dynamicStyle = document.createElement('style');   // Attributes which vary based on the current status
-		const animationStyle = document.createElement('style'); // Attributes used when the indicator is animated
+		const staticSheet = new CSSStyleSheet();    // Size & postion attributes present all the time, to avoid things moving around when the status changes
+		const dynamicSheet = new CSSStyleSheet();   // Attributes which vary based on the current status
+		const animationSheet = new CSSStyleSheet(); // Attributes used when the indicator is animated
 
-		staticStyle.textContent = `
+		staticSheet.replaceSync(`
 		:host {
 			display: block;
 			padding: 11px;
@@ -17,10 +17,8 @@ class StatusIndicator extends HTMLElement {
 			border: inset 1px transparent;
 			border-radius: 25px;
 		}
-		`;
-		shadow.appendChild(staticStyle);
-		shadow.appendChild(dynamicStyle);
-		shadow.appendChild(animationStyle);
+		`);
+		shadow.adoptedStyleSheets = [staticSheet, dynamicSheet, animationSheet];
 
 		let streamingState;
 		let serviceWorkerState;
@@ -40,10 +38,10 @@ class StatusIndicator extends HTMLElement {
 			// If the service worker is no longer in waiting mode, remove the refreshing animation
 			// This is rarely the case, as most apps do a full refresh of the page after SW waiting has been skipped
 			if (serviceWorkerState !== 'waiting') {
-				animationStyle.textContent = '';
+				animationSheet.replaceSync('');
 			}
 			if (!streamingState && serviceWorkerState !== 'waiting') {
-				dynamicStyle.textContent = '';
+				dynamicSheet.replaceSync('');
 				component.removeAttribute("title");
 				return;
 			}
@@ -62,19 +60,19 @@ class StatusIndicator extends HTMLElement {
 				title = "Unknown Status: "+component.getAttribute("streaming");
 			}
 			component.setAttribute("title", title);
-			dynamicStyle.textContent = `
+			dynamicSheet.replaceSync(`
 			:host {
 				background-color: ${iconColour};
 				background-image: linear-gradient(rgba(255, 255, 255, 0.7) 15%, transparent 80%, transparent 85%, rgba(0, 0, 0, 0.2) 95%, transparent 100%);
 				border-color: ${iconColour};
 				cursor: ${cursor};
 			}
-			`;
+			`);
 		});
 		component.addEventListener("click", function () {
 			// When clicked in the waiting state, spin the indicator and fire a skip waiting event
 			if (serviceWorkerState === "waiting") {
-				animationStyle.textContent = `
+				animationSheet.replaceSync(`
 				:host  {
 					animation: spin 1.25s linear infinite running;
 				}
@@ -83,7 +81,7 @@ class StatusIndicator extends HTMLElement {
 					from { transform:rotate(0deg); }
 					to { transform:rotate(360deg); }
 				}
-				`;
+				`);
 				statusChannel.postMessage("service-worker-skip-waiting");
 			}
 		});
