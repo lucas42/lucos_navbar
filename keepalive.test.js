@@ -6,7 +6,7 @@
  * _resetForTest() is called between tests to reset module-level state.
  */
 
-import { test, mock, beforeEach } from 'node:test';
+import { test, mock, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { initKeepalive, _resetForTest, _tryRemintForTest } from './keepalive.js';
 
@@ -46,6 +46,12 @@ beforeEach(() => {
 	docListeners = {};
 	mockChannel = null;
 	mock.reset(); // clear call counts on all mocks
+	_resetForTest();
+});
+
+afterEach(() => {
+	// Clear any open setInterval/setTimeout so the event loop drains after the
+	// last test and node --test exits cleanly rather than timing out.
 	_resetForTest();
 });
 
