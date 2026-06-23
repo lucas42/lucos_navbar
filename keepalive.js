@@ -3,19 +3,18 @@
  *
  * When initKeepalive(aithneOrigin) is called, this module:
  *
- * 1. Fires a credentialed POST to <aithneOrigin>/auth/remint every 10 minutes
- *    while any consumer tab is visible — well under the 15-minute aithne_session TTL.
+ * 1. Fires a credentialed POST to <aithneOrigin>/auth/remint every 10 minutes —
+ *    well under the 15-minute aithne_session TTL. The timer runs regardless of
+ *    whether the tab is visible or backgrounded.
  * 2. Also fires immediately on focus and visibilitychange→visible events to close
  *    the wake-from-sleep race (timer didn't fire while the laptop was sleeping).
- * 3. Pauses the timer while document.hidden — backgrounded tabs do not extend
- *    the session indefinitely (security nudge per lucos-security's ADR-0003 review).
- * 4. Coordinates across same-origin tabs via BroadcastChannel('lucos_session'):
+ * 3. Coordinates across same-origin tabs via BroadcastChannel('lucos_session'):
  *    when one tab re-mints it broadcasts the timestamp; others reset their countdown.
  *    This produces ~one refresh per interval across N open tabs, not N refreshes.
- * 5. Intercepts every form submit to guarantee a fresh token before the POST fires.
+ * 4. Intercepts every form submit to guarantee a fresh token before the POST fires.
  *    This closes the wake-from-sleep / long-idle race for form submissions: the
  *    timer may not have fired while the machine slept, but the submit always will.
- * 6. Retries failed remints after 1 minute. With a 15-minute TTL and a 10-minute
+ * 5. Retries failed remints after 1 minute. With a 15-minute TTL and a 10-minute
  *    normal interval, a single transient error would otherwise exhaust the TTL before
  *    the next scheduled attempt. The 1-minute retry gives 4–5 attempts within the window.
  *
@@ -40,13 +39,12 @@ function isRefreshDue() {
 /**
  * Schedule a remint attempt one minute after a failure.
  * No-op if a retry is already pending (idempotent).
- * The retry is skipped if the tab is hidden when it fires.
  */
 function scheduleRetry() {
 	if (retryTimer !== null) return; // already pending
 	retryTimer = setTimeout(() => {
 		retryTimer = null;
-		if (!document.hidden) tryRemint();
+		tryRemint();
 	}, RETRY_DELAY_MS);
 }
 
@@ -90,16 +88,8 @@ async function tryRemint() {
 function startTimer() {
 	if (keepaliveTimer !== null) return; // already running
 	keepaliveTimer = setInterval(() => {
-		// Only refresh while the tab is visible — pause for backgrounded tabs.
-		if (!document.hidden) tryRemint();
+		tryRemint();
 	}, INTERVAL_MS);
-}
-
-function stopTimer() {
-	if (keepaliveTimer !== null) {
-		clearInterval(keepaliveTimer);
-		keepaliveTimer = null;
-	}
 }
 
 /**
@@ -128,13 +118,11 @@ export function initKeepalive(aithneOrigin) {
 		}
 	});
 
-	// Pause when the tab is hidden; resume (and check for refresh) when visible.
+	// Fire an immediate check when returning to visibility — catches the wake-from-sleep
+	// gap where the timer did not fire while the machine was sleeping.
 	document.addEventListener('visibilitychange', () => {
-		if (document.hidden) {
-			stopTimer();
-		} else {
-			tryRemint(); // immediate check on returning to visibility
-			startTimer();
+		if (!document.hidden) {
+			tryRemint();
 		}
 	});
 
@@ -162,10 +150,8 @@ export function initKeepalive(aithneOrigin) {
 		}
 	}, true /* capture */);
 
-	// Start the timer now if the tab is already visible.
-	if (!document.hidden) {
-		startTimer();
-	}
+	// Start the timer — runs regardless of tab visibility.
+	startTimer();
 }
 
 /**

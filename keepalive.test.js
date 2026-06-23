@@ -170,7 +170,7 @@ test('initKeepalive is idempotent — second call with a different origin is ign
 });
 
 test('visibilitychange to visible triggers an immediate tryRemint', async () => {
-	isHidden = true; // start hidden — initKeepalive will not start the timer
+	isHidden = true;
 	initKeepalive('https://aithne.l42.eu');
 	const fetchMock = mock.method(globalThis, 'fetch', async () => ({ ok: true }));
 
@@ -180,6 +180,13 @@ test('visibilitychange to visible triggers an immediate tryRemint', async () => 
 	await Promise.resolve(); // flush the tryRemint microtask
 
 	assert.equal(fetchMock.mock.calls.length, 1, 'fetch fires on visibilitychange to visible');
+});
+
+test('timer starts even when tab is hidden at init', (t) => {
+	isHidden = true;
+	const setIntervalSpy = t.mock.method(globalThis, 'setInterval');
+	initKeepalive('https://aithne.l42.eu');
+	assert.equal(setIntervalSpy.mock.calls.length, 1, 'setInterval called regardless of document.hidden');
 });
 
 test('BroadcastChannel postMessage is called on a successful remint', async () => {
