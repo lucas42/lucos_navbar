@@ -129,7 +129,11 @@ export function initKeepalive(aithneOrigin) {
 		await tryRemint();
 		inFlight = true;
 		try {
-			event.target.requestSubmit();
+			// Guard against the form being removed from the DOM while the remint
+			// fetch was in flight — requestSubmit() throws NotConnectedError otherwise.
+			if (event.target.isConnected) {
+				event.target.requestSubmit();
+			}
 		} finally {
 			inFlight = false;
 		}
