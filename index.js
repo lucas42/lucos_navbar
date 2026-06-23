@@ -1,10 +1,11 @@
 import initTimeComponent from 'lucos_time_component';
 import Logo from './assets/lucos-logo.png';
 import './status-indicator.js';
+import { initKeepalive } from './keepalive.js';
 
 class Navbar extends HTMLElement {
 	static get observedAttributes() {
-		return ['font','title-padding','text-colour','bg-colour'];
+		return ['font','title-padding','text-colour','bg-colour','aithne-origin'];
 	}
 	constructor() {
 		// Always call super first in constructor
@@ -153,6 +154,13 @@ class Navbar extends HTMLElement {
 		shadow.appendChild(navbar);
 	}
 
+	connectedCallback() {
+		// Start the keepalive if the aithne-origin attribute was already set
+		// before the element was inserted into the DOM.
+		const origin = this.getAttribute('aithne-origin');
+		if (origin) initKeepalive(origin);
+	}
+
 	attributeChangedCallback(name, oldValue, newValue) {
 		switch (name) {
 			case "font":
@@ -162,6 +170,11 @@ class Navbar extends HTMLElement {
 			case "text-colour":
 			case "bg-colour":
 				this.updateColour();
+				break;
+			case "aithne-origin":
+				// Start the keepalive when the attribute is set dynamically.
+				// initKeepalive is idempotent — repeated calls after the first are no-ops.
+				if (newValue) initKeepalive(newValue);
 				break;
 		}
 	}
