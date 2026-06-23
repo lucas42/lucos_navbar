@@ -66,7 +66,7 @@ async function tryRemint() {
 	// Optimistic claim: prevent concurrent tabs from also fetching.
 	const now = Date.now();
 	lastRefreshedAt = now;
-	sessionChannel.postMessage({ type: 'session-refreshed', timestamp: now });
+	sessionChannel.postMessage({ type: 'session-refreshing', timestamp: now });
 
 	try {
 		const resp = await fetch(remintUrl, {
@@ -120,9 +120,10 @@ export function initKeepalive(aithneOrigin) {
 	// Created here (not at module load) so tests can stub globalThis.BroadcastChannel first.
 	sessionChannel = new BroadcastChannel('lucos_session');
 	sessionChannel.addEventListener('message', (event) => {
-		// Another tab successfully re-minted. Update our timestamp so we skip
-		// our own fetch until the full interval has elapsed again.
-		if (event.data?.type === 'session-refreshed') {
+		// Another tab has claimed the next refresh slot (optimistic broadcast,
+		// sent before the fetch). Update our timestamp so we skip our own fetch
+		// until the full interval has elapsed again.
+		if (event.data?.type === 'session-refreshing') {
 			lastRefreshedAt = event.data.timestamp;
 		}
 	});

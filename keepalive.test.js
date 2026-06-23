@@ -122,7 +122,7 @@ test('BroadcastChannel message from another tab prevents redundant fetch', async
 	const fetchMock = mock.method(globalThis, 'fetch', async () => ({ ok: true }));
 
 	// Simulate another tab refreshing right now
-	mockChannel._dispatch({ type: 'session-refreshed', timestamp: Date.now() });
+	mockChannel._dispatch({ type: 'session-refreshing', timestamp: Date.now() });
 
 	await _tryRemintForTest();
 
@@ -135,7 +135,7 @@ test('BroadcastChannel message with old timestamp still allows fetch', async () 
 
 	// Simulate another tab refreshing 11 minutes ago (beyond the 10-minute interval)
 	const elevenMinutesAgo = Date.now() - 11 * 60 * 1000;
-	mockChannel._dispatch({ type: 'session-refreshed', timestamp: elevenMinutesAgo });
+	mockChannel._dispatch({ type: 'session-refreshing', timestamp: elevenMinutesAgo });
 
 	await _tryRemintForTest();
 
@@ -184,6 +184,6 @@ test('BroadcastChannel postMessage is called on a successful remint', async () =
 
 	assert.equal(mockChannel.postMessage.mock.calls.length, 1, 'BroadcastChannel notified');
 	const [msg] = mockChannel.postMessage.mock.calls[0].arguments;
-	assert.equal(msg.type, 'session-refreshed');
+	assert.equal(msg.type, 'session-refreshing');
 	assert.ok(typeof msg.timestamp === 'number', 'timestamp is a number');
 });
