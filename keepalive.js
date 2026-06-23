@@ -15,29 +15,39 @@
  * 5. Intercepts every form submit to guarantee a fresh token before the POST fires.
  *    This closes the wake-from-sleep / long-idle race for form submissions: the
  *    timer may not have fired while the machine slept, but the submit always will.
+ * 6. Retries failed remints after 1 minute. With a 15-minute TTL and a 10-minute
+ *    normal interval, a single transient error would otherwise exhaust the TTL before
+ *    the next scheduled attempt. The 1-minute retry gives 4–5 attempts within the window.
  *
  * The aithne origin is NOT hardcoded; it is passed in by the consumer via the
  * lucos-navbar aithne-origin attribute (varies per environment).
  */
 
 const INTERVAL_MS = 10 * 60 * 1000; // 10 min — safely below the 15-min access-token TTL
+const RETRY_DELAY_MS = 60 * 1000;    // 1 min retry after failure — gives 4+ attempts in the TTL window
 
 let remintUrl = null;
 let lastRefreshedAt = 0;
 let keepaliveTimer = null;
-
-// BroadcastChannel is same-origin by spec — no cross-origin leakage.
-const sessionChannel = new BroadcastChannel('lucos_session');
-sessionChannel.addEventListener('message', (event) => {
-	// Another tab successfully re-minted. Update our timestamp so we skip
-	// our own fetch until the full interval has elapsed again.
-	if (event.data?.type === 'session-refreshed') {
-		lastRefreshedAt = event.data.timestamp;
-	}
-});
+let retryTimer = null;
+let sessionChannel = null;
+let initialized = false;
 
 function isRefreshDue() {
 	return Date.now() - lastRefreshedAt > INTERVAL_MS;
+}
+
+/**
+ * Schedule a remint attempt one minute after a failure.
+ * No-op if a retry is already pending (idempotent).
+ * The retry is skipped if the tab is hidden when it fires.
+ */
+function scheduleRetry() {
+	if (retryTimer !== null) return; // already pending
+	retryTimer = setTimeout(() => {
+		retryTimer = null;
+		if (!document.hidden) tryRemint();
+	}, RETRY_DELAY_MS);
 }
 
 /**
@@ -47,7 +57,8 @@ function isRefreshDue() {
  *
  * Optimistically claims the refresh slot by setting lastRefreshedAt and
  * broadcasting before the fetch, so concurrent tabs that also see isRefreshDue()
- * skip their own request. On fetch failure the timestamp is reset to allow retry.
+ * skip their own request. On fetch failure the timestamp is reset to allow retry,
+ * and a 1-minute retry is scheduled.
  */
 async function tryRemint() {
 	if (!remintUrl || !isRefreshDue()) return;
@@ -63,14 +74,16 @@ async function tryRemint() {
 			credentials: 'include',
 		});
 		if (!resp.ok) {
-			// Endpoint returned an error (e.g. 401 expired IdP session).
-			// Reset so the next event triggers another attempt.
+			// Endpoint returned an error (e.g. 401 expired IdP session, 503 transient).
+			// Reset so the next event triggers another attempt, and schedule a retry.
 			lastRefreshedAt = 0;
 			console.warn(`lucos_navbar: session keepalive returned ${resp.status}`);
+			scheduleRetry();
 		}
 	} catch (err) {
-		lastRefreshedAt = 0; // network error — allow retry on next event
+		lastRefreshedAt = 0; // network error — allow retry
 		console.warn('lucos_navbar: session keepalive fetch failed:', err);
+		scheduleRetry();
 	}
 }
 
@@ -89,8 +102,6 @@ function stopTimer() {
 	}
 }
 
-let initialized = false;
-
 /**
  * Initialise the session keepalive.
  * Called by the Navbar custom element when its aithne-origin attribute is set.
@@ -104,6 +115,17 @@ export function initKeepalive(aithneOrigin) {
 	initialized = true;
 
 	remintUrl = `${aithneOrigin}/auth/remint`;
+
+	// BroadcastChannel is same-origin by spec — no cross-origin leakage.
+	// Created here (not at module load) so tests can stub globalThis.BroadcastChannel first.
+	sessionChannel = new BroadcastChannel('lucos_session');
+	sessionChannel.addEventListener('message', (event) => {
+		// Another tab successfully re-minted. Update our timestamp so we skip
+		// our own fetch until the full interval has elapsed again.
+		if (event.data?.type === 'session-refreshed') {
+			lastRefreshedAt = event.data.timestamp;
+		}
+	});
 
 	// Pause when the tab is hidden; resume (and check for refresh) when visible.
 	document.addEventListener('visibilitychange', () => {
@@ -143,4 +165,25 @@ export function initKeepalive(aithneOrigin) {
 	if (!document.hidden) {
 		startTimer();
 	}
+}
+
+/**
+ * Reset all module-level state. For use in unit tests only — not exported for
+ * production use.
+ */
+export function _resetForTest() {
+	if (sessionChannel) { sessionChannel.close(); sessionChannel = null; }
+	if (keepaliveTimer !== null) { clearInterval(keepaliveTimer); keepaliveTimer = null; }
+	if (retryTimer !== null) { clearTimeout(retryTimer); retryTimer = null; }
+	remintUrl = null;
+	lastRefreshedAt = 0;
+	initialized = false;
+}
+
+/**
+ * Directly invoke tryRemint(). For use in unit tests only — lets tests exercise
+ * the fetch/retry logic without waiting for the setInterval tick.
+ */
+export async function _tryRemintForTest() {
+	return tryRemint();
 }
