@@ -11,15 +11,15 @@
  * 3. Coordinates across same-origin tabs via BroadcastChannel('lucos_session'):
  *    when one tab re-mints it broadcasts the timestamp; others reset their countdown.
  *    This produces ~one refresh per interval across N open tabs, not N refreshes.
- * 6. Reports session health to the status indicator via BroadcastChannel('lucos_status'):
- *    posts 'session-active' on a successful remint, 'session-expired' on any failure,
- *    so the lucos-status-indicator can show an orange dot when the session is lost.
  * 4. Intercepts every form submit to guarantee a fresh token before the POST fires.
  *    This closes the wake-from-sleep / long-idle race for form submissions: the
  *    timer may not have fired while the machine slept, but the submit always will.
  * 5. Retries failed remints after 1 minute. With a 15-minute TTL and a 10-minute
  *    normal interval, a single transient error would otherwise exhaust the TTL before
  *    the next scheduled attempt. The 1-minute retry gives 4–5 attempts within the window.
+ * 6. Reports session health to the status indicator via BroadcastChannel('lucos_status'):
+ *    posts 'session-active' on a successful remint, 'session-expired' on any failure,
+ *    so the lucos-status-indicator can show an orange dot when the session is lost.
  *
  * The aithne origin is NOT hardcoded; it is passed in by the consumer via the
  * lucos-navbar aithne-origin attribute (varies per environment).
