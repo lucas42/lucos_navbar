@@ -22,6 +22,7 @@ class StatusIndicator extends HTMLElement {
 
 		let streamingState;
 		let serviceWorkerState;
+		let sessionState;
 		const statusChannel = new BroadcastChannel("lucos_status");
 		statusChannel.addEventListener('message', event => {
 			if (event.data.startsWith('streaming-')) {
@@ -29,6 +30,9 @@ class StatusIndicator extends HTMLElement {
 			}
 			if (event.data.startsWith('service-worker-')) {
 				serviceWorkerState = event.data.replace('service-worker-','');
+			}
+			if (event.data.startsWith('session-')) {
+				sessionState = event.data.replace('session-','');
 			}
 			const serviceWorkerWaiting = (component.getAttribute("service-worker") === "waiting");
 			let iconColour;
@@ -40,7 +44,7 @@ class StatusIndicator extends HTMLElement {
 			if (serviceWorkerState !== 'waiting') {
 				animationSheet.replaceSync('');
 			}
-			if (!streamingState && serviceWorkerState !== 'waiting') {
+			if (!streamingState && serviceWorkerState !== 'waiting' && sessionState !== 'expired') {
 				dynamicSheet.replaceSync('');
 				component.removeAttribute("title");
 				return;
@@ -49,6 +53,9 @@ class StatusIndicator extends HTMLElement {
 				iconColour = "blue";
 				cursor = "pointer";
 				title = "New Version Available";
+			} else if (sessionState === 'expired') {
+				iconColour = "orange";
+				title = "Session expired";
 			} else if (streamingState === "opened") {
 				iconColour = "green";
 				title = "Connected";
