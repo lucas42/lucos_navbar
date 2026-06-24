@@ -11,6 +11,9 @@
  * 3. Coordinates across same-origin tabs via BroadcastChannel('lucos_session'):
  *    when one tab re-mints it broadcasts the timestamp; others reset their countdown.
  *    This produces ~one refresh per interval across N open tabs, not N refreshes.
+ * 6. Reports session health to the status indicator via BroadcastChannel('lucos_status'):
+ *    posts 'session-active' on a successful remint, 'session-expired' on any failure,
+ *    so the lucos-status-indicator can show an orange dot when the session is lost.
  * 4. Intercepts every form submit to guarantee a fresh token before the POST fires.
  *    This closes the wake-from-sleep / long-idle race for form submissions: the
  *    timer may not have fired while the machine slept, but the submit always will.
@@ -30,6 +33,7 @@ let lastRefreshedAt = 0;
 let keepaliveTimer = null;
 let retryTimer = null;
 let sessionChannel = null;
+let statusChannel = null;
 let initialized = false;
 
 function isRefreshDue() {
@@ -76,11 +80,15 @@ async function tryRemint() {
 			// Reset so the next event triggers another attempt, and schedule a retry.
 			lastRefreshedAt = 0;
 			console.warn(`lucos_navbar: session keepalive returned ${resp.status}`);
+			statusChannel.postMessage('session-expired');
 			scheduleRetry();
+		} else {
+			statusChannel.postMessage('session-active');
 		}
 	} catch (err) {
 		lastRefreshedAt = 0; // network error — allow retry
 		console.warn('lucos_navbar: session keepalive fetch failed:', err);
+		statusChannel.postMessage('session-expired');
 		scheduleRetry();
 	}
 }
@@ -109,6 +117,7 @@ export function initKeepalive(aithneOrigin) {
 	// BroadcastChannel is same-origin by spec — no cross-origin leakage.
 	// Created here (not at module load) so tests can stub globalThis.BroadcastChannel first.
 	sessionChannel = new BroadcastChannel('lucos_session');
+	statusChannel = new BroadcastChannel('lucos_status');
 	sessionChannel.addEventListener('message', (event) => {
 		// Another tab has claimed the next refresh slot (optimistic broadcast,
 		// sent before the fetch). Update our timestamp so we skip our own fetch
@@ -160,6 +169,7 @@ export function initKeepalive(aithneOrigin) {
  */
 export function _resetForTest() {
 	if (sessionChannel) { sessionChannel.close(); sessionChannel = null; }
+	if (statusChannel) { statusChannel.close(); statusChannel = null; }
 	if (keepaliveTimer !== null) { clearInterval(keepaliveTimer); keepaliveTimer = null; }
 	if (retryTimer !== null) { clearTimeout(retryTimer); retryTimer = null; }
 	remintUrl = null;
