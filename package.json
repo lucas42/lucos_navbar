@@ -8,7 +8,7 @@
   ],
   "main": "lucos_navbar.js",
   "scripts": {
-    "test": "node --test keepalive.test.js",
+    "test": "node --test keepalive.test.js status-indicator.test.js",
     "example": "webpack -c example/webpack.config.js && open example/index.html",
     "build": "webpack",
     "prepublishOnly": "webpack --mode=production"

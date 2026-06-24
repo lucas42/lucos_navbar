@@ -14,20 +14,23 @@ import { initKeepalive, _resetForTest, _tryRemintForTest } from './keepalive.js'
 // These are assigned once at module load. keepalive.js only reads these globals
 // inside initKeepalive() or tryRemint() — never at import time — so order is safe.
 
-let mockChannel;
+let mockChannel;   // always points to the lucos_session channel (backward compat)
+let mockChannels;  // keyed by channel name — use mockChannels['lucos_status'] in new tests
 let docListeners;
 let isHidden;
 
-globalThis.BroadcastChannel = function MockBroadcastChannel() {
+globalThis.BroadcastChannel = function MockBroadcastChannel(name) {
 	const listeners = {};
-	mockChannel = {
+	const channel = {
 		addEventListener(type, fn) { (listeners[type] ??= []).push(fn); },
 		postMessage: mock.fn(),
 		close: mock.fn(),
 		/** Simulate an incoming message from another tab. */
 		_dispatch(data) { (listeners['message'] ?? []).forEach(fn => fn({ data })); },
 	};
-	return mockChannel;
+	mockChannels[name] = channel;
+	if (name === 'lucos_session') mockChannel = channel;
+	return channel;
 };
 
 globalThis.document = {
@@ -45,6 +48,7 @@ beforeEach(() => {
 	isHidden = false;
 	docListeners = {};
 	mockChannel = null;
+	mockChannels = {};
 	mock.reset(); // clear call counts on all mocks
 	_resetForTest();
 });
@@ -199,4 +203,37 @@ test('BroadcastChannel postMessage is called on a successful remint', async () =
 	const [msg] = mockChannel.postMessage.mock.calls[0].arguments;
 	assert.equal(msg.type, 'session-refreshing');
 	assert.ok(typeof msg.timestamp === 'number', 'timestamp is a number');
+});
+
+test('successful remint posts session-active to lucos_status channel', async () => {
+	initKeepalive('https://aithne.l42.eu');
+	mock.method(globalThis, 'fetch', async () => ({ ok: true }));
+
+	await _tryRemintForTest();
+
+	const statusCh = mockChannels['lucos_status'];
+	assert.equal(statusCh.postMessage.mock.calls.length, 1, 'one message posted to lucos_status');
+	assert.equal(statusCh.postMessage.mock.calls[0].arguments[0], 'session-active');
+});
+
+test('non-OK remint response posts session-expired to lucos_status channel', async () => {
+	initKeepalive('https://aithne.l42.eu');
+	mock.method(globalThis, 'fetch', async () => ({ ok: false, status: 503 }));
+
+	await _tryRemintForTest();
+
+	const statusCh = mockChannels['lucos_status'];
+	assert.equal(statusCh.postMessage.mock.calls.length, 1, 'one message posted to lucos_status');
+	assert.equal(statusCh.postMessage.mock.calls[0].arguments[0], 'session-expired');
+});
+
+test('network error during remint posts session-expired to lucos_status channel', async () => {
+	initKeepalive('https://aithne.l42.eu');
+	mock.method(globalThis, 'fetch', async () => { throw new Error('NetworkError'); });
+
+	await _tryRemintForTest();
+
+	const statusCh = mockChannels['lucos_status'];
+	assert.equal(statusCh.postMessage.mock.calls.length, 1, 'one message posted to lucos_status');
+	assert.equal(statusCh.postMessage.mock.calls[0].arguments[0], 'session-expired');
 });
