@@ -11,13 +11,10 @@
  * 3. Coordinates across same-origin tabs via BroadcastChannel('lucos_session'):
  *    when one tab re-mints it broadcasts the timestamp; others reset their countdown.
  *    This produces ~one refresh per interval across N open tabs, not N refreshes.
- * 4. Intercepts every form submit to guarantee a fresh token before the POST fires.
- *    This closes the wake-from-sleep / long-idle race for form submissions: the
- *    timer may not have fired while the machine slept, but the submit always will.
- * 5. Retries failed remints after 1 minute. With a 15-minute TTL and a 10-minute
+ * 4. Retries failed remints after 1 minute. With a 15-minute TTL and a 10-minute
  *    normal interval, a single transient error would otherwise exhaust the TTL before
  *    the next scheduled attempt. The 1-minute retry gives 4–5 attempts within the window.
- * 6. Reports session health to the status indicator via BroadcastChannel('lucos_status'):
+ * 5. Reports session health to the status indicator via BroadcastChannel('lucos_status'):
  *    posts 'session-active' on a successful remint, 'session-expired' on any failure,
  *    so the lucos-status-indicator can show an orange dot when the session is lost.
  *
@@ -138,35 +135,6 @@ export function initKeepalive(aithneOrigin) {
 	// Fire on window focus to catch wake-from-sleep when the tab was already visible
 	// but the machine was sleeping (visibilitychange does not always fire in that case).
 	window.addEventListener('focus', () => tryRemint());
-
-	// §4 submit intercept: guarantee a fresh token before every form submit.
-	// Installed once globally regardless of how many navbars exist on the page.
-	// Uses capture phase so it runs before any page-level submit handlers.
-	let inFlight = false;
-	document.addEventListener('submit', async (event) => {
-		if (inFlight) return; // re-triggered submit after remint — let it proceed
-
-		// Skip the intercept for forms that open a new browsing context (target="_blank").
-		// A new-tab navigation requires transient activation, which is only available
-		// synchronously in the original click gesture.  Firing requestSubmit() after
-		// `await tryRemint()` loses that activation and the new tab is dropped by the
-		// browser.  The cookie stays fresh via the background interval and
-		// focus/visibility remints, so skipping the pre-remint here is safe.
-		if (event.target.target === '_blank') return;
-
-		event.preventDefault();
-		await tryRemint();
-		inFlight = true;
-		try {
-			// Guard against the form being removed from the DOM while the remint
-			// fetch was in flight — requestSubmit() throws NotConnectedError otherwise.
-			if (event.target.isConnected) {
-				event.target.requestSubmit();
-			}
-		} finally {
-			inFlight = false;
-		}
-	}, true /* capture */);
 
 	// Start the timer — runs regardless of tab visibility.
 	startTimer();
