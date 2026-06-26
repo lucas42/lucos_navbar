@@ -237,3 +237,40 @@ test('network error during remint posts session-expired to lucos_status channel'
 	assert.equal(statusCh.postMessage.mock.calls.length, 1, 'one message posted to lucos_status');
 	assert.equal(statusCh.postMessage.mock.calls[0].arguments[0], 'session-expired');
 });
+
+test('submit interceptor skips target="_blank" forms — no preventDefault, no remint', async () => {
+	initKeepalive('https://aithne.l42.eu');
+	const fetchMock = mock.method(globalThis, 'fetch', async () => ({ ok: true }));
+	const preventDefaultMock = mock.fn();
+	const requestSubmitMock = mock.fn();
+
+	document._dispatch('submit', {
+		preventDefault: preventDefaultMock,
+		target: { target: '_blank', isConnected: true, requestSubmit: requestSubmitMock },
+	});
+
+	// Flush any microtasks — the handler returns early synchronously but await to be safe.
+	await Promise.resolve();
+
+	assert.equal(preventDefaultMock.mock.calls.length, 0, 'preventDefault not called for _blank forms');
+	assert.equal(fetchMock.mock.calls.length, 0, 'no remint fetch for _blank forms');
+	assert.equal(requestSubmitMock.mock.calls.length, 0, 'requestSubmit not called — native submit proceeds');
+});
+
+test('submit interceptor still intercepts same-tab forms (target="")', async () => {
+	initKeepalive('https://aithne.l42.eu');
+	mock.method(globalThis, 'fetch', async () => ({ ok: true }));
+	const preventDefaultMock = mock.fn();
+	const requestSubmitMock = mock.fn();
+
+	document._dispatch('submit', {
+		preventDefault: preventDefaultMock,
+		target: { target: '', isConnected: true, requestSubmit: requestSubmitMock },
+	});
+
+	// Let the async handler complete (awaits fetch + microtasks).
+	await new Promise(resolve => setTimeout(resolve, 0));
+
+	assert.equal(preventDefaultMock.mock.calls.length, 1, 'preventDefault called for same-tab forms');
+	assert.equal(requestSubmitMock.mock.calls.length, 1, 'requestSubmit called after remint');
+});

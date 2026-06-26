@@ -145,6 +145,15 @@ export function initKeepalive(aithneOrigin) {
 	let inFlight = false;
 	document.addEventListener('submit', async (event) => {
 		if (inFlight) return; // re-triggered submit after remint — let it proceed
+
+		// Skip the intercept for forms that open a new browsing context (target="_blank").
+		// A new-tab navigation requires transient activation, which is only available
+		// synchronously in the original click gesture.  Firing requestSubmit() after
+		// `await tryRemint()` loses that activation and the new tab is dropped by the
+		// browser.  The cookie stays fresh via the background interval and
+		// focus/visibility remints, so skipping the pre-remint here is safe.
+		if (event.target.target === '_blank') return;
+
 		event.preventDefault();
 		await tryRemint();
 		inFlight = true;
