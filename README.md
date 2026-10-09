@@ -68,7 +68,7 @@ A page that reports `service-worker-waiting` must also handle the update itself:
 2. **The service worker** handles that with `self.addEventListener('message', …)`, calling `self.skipWaiting()` for `'skip-waiting'`, and calls `self.clients.claim()` in its `activate` handler.
 3. **The page** reloads on `navigator.serviceWorker`'s `controllerchange` event, which also clears the spinning indicator.
 
-Don't listen for `service-worker-skip-waiting` inside the service worker.  A waiting worker that has been idle for a while is usually stopped by the browser, and a Broadcast Channel message does not start a stopped worker, so it is never received and the indicator spins forever.  `postMessage` to the worker does start it.
+Don't listen for `service-worker-skip-waiting` inside the service worker.  The browser may stop a waiting worker that has been idle, and a Broadcast Channel message is not a reliable way to reach a stopped worker.  If it doesn't arrive, the indicator spins forever (the suspected cause of lucas42/lucos_notes#544).  `postMessage` to the worker is the reliable route: the Service Worker spec starts the worker to deliver it.
 
 The navbar doesn't post to the worker itself, because some apps need to finish work before the switch (lucos_media_seinn saves the current track's status first) and a direct post would race that.  lucos_media_seinn's `src/client/load-service-worker.js` and `src/service-worker/update.js` are the reference implementation.
 
