@@ -59,7 +59,18 @@ It listens to the following events:
 * `service-worker-active` Indicates a service worker has become active.  Removes the behaviours set by `service-worker-waiting`, including any animations on the status indicator.
 
 It fires the following event:
-* `service-worker-skip-waiting` Fired when the status indicator is in the `service-worker-waiting` state and recieves a click event.  The status indicator also begins to spin when this is fired.  This indicates to the new service worker that it should skip waiting and become the active one.
+* `service-worker-skip-waiting` Fired when the status indicator is in the `service-worker-waiting` state and receives a click event.  The status indicator also begins to spin when this is fired.  This signals that the user wants to switch to the new version.  It is addressed to the **page**, not the service worker: see [Handling service worker updates](#handling-service-worker-updates).
+
+### Handling service worker updates
+A page that reports `service-worker-waiting` must also handle the update itself:
+
+1. **The page** listens for `service-worker-skip-waiting` on `lucos_status`, does any app-specific work that has to happen before the switch, then calls `registration.waiting?.postMessage('skip-waiting')`.
+2. **The service worker** handles that with `self.addEventListener('message', …)`, calling `self.skipWaiting()` for `'skip-waiting'`, and calls `self.clients.claim()` in its `activate` handler.
+3. **The page** reloads on `navigator.serviceWorker`'s `controllerchange` event, which also clears the spinning indicator.
+
+Don't listen for `service-worker-skip-waiting` inside the service worker.  The browser may stop a waiting worker that has been idle, and a Broadcast Channel message doesn't start a stopped worker, so it never arrives and the indicator spins forever.  This was reproduced in Chromium for lucas42/lucos_notes#544; other browsers haven't been tested.  `postMessage` to the worker is the reliable route: the Service Worker spec starts the worker to deliver it.
+
+The navbar doesn't post to the worker itself, because some apps need to finish work before the switch (lucos_media_seinn saves the current track's status first) and a direct post would race that.  lucos_media_seinn's `src/client/load-service-worker.js` and `src/service-worker/update.js` are the reference implementation.
 
 ## Manual Testing
 Run:
