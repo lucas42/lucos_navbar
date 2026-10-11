@@ -59,7 +59,7 @@ It listens to the following events:
 * `service-worker-active` Indicates a service worker has become active.  Removes the behaviours set by `service-worker-waiting`, including any animations on the status indicator.
 
 It fires the following event:
-* `service-worker-skip-waiting` Fired when the status indicator is in the `service-worker-waiting` state and recieves a click event.  The status indicator also begins to spin when this is fired.  This indicates to the new service worker that it should skip waiting and become the active one.
+* `service-worker-skip-waiting` Fired when the status indicator is in the `service-worker-waiting` state and receives a click event.  The status indicator also begins to spin when this is fired.  This signals that the user wants to switch to the new version.  It is recommended that the page listens to this event, rather than the Service Worker; as the browser may have stopped an idle worker, and a Broadcast Channel message doesn't start it again.
 
 ## Manual Testing
 Run:
